@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core/styles';
+import DragIcon from '@material-ui/icons/DragIndicatorTwoTone';
+
 import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 import CloseIcon from '@material-ui/icons/Close';
@@ -19,7 +22,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Item(props) {
-  const [state, setState] = useState(0);
+  let [state, setState] = useState({});
+
   const classes = useStyles();
   let interval = useRef(null);
 
@@ -27,12 +31,12 @@ function Item(props) {
   dayjs.extend(utc);
   dayjs.extend(timezone);
 
-  const intervalFunc = () => {
+  const getIntervalData = () => {
     const diff = (Date.now() - props.item.data.initial) / 1000;
     let milliseconds = props.item.data.days * 86400 * 1000;
     let completed = Math.floor(diff / (milliseconds / 1000));
 
-    setState({
+    return {
       completed: `Goals reached: ${completed < 0 ? 0 : completed}`,
       next:
         diff >= 0
@@ -56,7 +60,11 @@ function Item(props) {
               )
             ).fromNow()}`
           : '',
-    });
+    };
+  };
+
+  const intervalFunc = () => {
+    setState(getIntervalData());
   };
 
   const standardFunc = (init = false) => {
@@ -110,104 +118,149 @@ function Item(props) {
     props.onInterval(interval.current);
   }, [props.id]);
 
+  if (props.item.type == 'standard') {
+    const diff = props.item.data - Date.now();
+    let data = {};
+
+    if (diff < 0) {
+      data = { msg: 'Reached' };
+    } else {
+      data = { msg: `Remaining: ${dayjs(props.item.data).toNow(true)}` };
+    }
+
+    [state, setState] = useState(data);
+  } else {
+    [state, setState] = useState(getIntervalData());
+  }
+
   return (
-    <div
-      style={{
-        backgroundColor: props.item.color || '#D1D1D1',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        userSelect: 'none',
-        padding: 10,
-        marginBottom: 10,
-      }}
+    <Draggable
+      key={`${props.nestedIndex}${props.index}`}
+      draggableId={`${props.nestedIndex}${props.index}`}
+      index={props.index}
     >
-      <div
-        style={{
-          width: '40px',
-          height: 'max-content',
-          display: 'flex',
-          justifyContent: 'space-between',
-          flexDirection: 'row-reverse',
-          position: 'absolute',
-          padding: 8,
-          top: 0,
-          right: 0,
-        }}
-      >
-        <IconButton
-          size="small"
-          onClick={() => {
-            clearInterval(interval.current);
-            props.onClose();
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          style={{
+            backgroundColor: 'yellow',
+            width: '100%',
+            height: '100%',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            userSelect: 'none',
+            padding: 10,
+            marginBottom: 10,
+            ...provided.draggableProps.style,
           }}
         >
-          <CloseIcon
-            className={
-              getTextColor(props.item.color || '#D1D1D1', true)
-                ? classes.buttonDark
-                : classes.buttonLight
-            }
-          />
-        </IconButton>
+          <div
+            style={{
+              width: '60px',
+              height: 'max-content',
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexDirection: 'row-reverse',
+              position: 'absolute',
+              padding: 8,
+              top: 0,
+              right: 0,
+            }}
+          >
+            <IconButton
+              size="small"
+              onClick={() => {
+                clearInterval(interval.current);
+                props.onClose();
+              }}
+            >
+              <CloseIcon
+                className={
+                  getTextColor(props.item.color || '#D1D1D1', true)
+                    ? classes.buttonDark
+                    : classes.buttonLight
+                }
+              />
+            </IconButton>
 
-        <IconButton size="small" onClick={props.onEdit}>
-          <EditIcon
-            className={
-              getTextColor(props.item.color || '#D1D1D1', true)
-                ? classes.buttonDark
-                : classes.buttonLight
-            }
-          />
-        </IconButton>
-      </div>
-
-      <div
-        style={{
-          wordWrap: 'break-word',
-          overflow: 'hidden',
-          textAlign: 'center',
-          width: '100%',
-          fontSize: '20px',
-          marginBottom: '15px',
-          color: getTextColor(props.item.color || '#D1D1D1'),
-        }}
-      >
-        {props.item.name}
-      </div>
-      <div
-        style={{
-          width: '100%',
-          height: '24px',
-          fontSize: '18px',
-          textAlign: 'center',
-          overflow: 'hidden',
-          color: getTextColor(props.item.color || '#D1D1D1'),
-        }}
-      >
-        {props.item.type == 'standard' ? state.msg : state.next}
-      </div>
-
-      <div
-        style={{
-          textAlign: 'center',
-          fontSize: '13px',
-          color: getTextColor(props.item.color || '#D1D1D1'),
-          opacity: '0.5',
-        }}
-      >
-        {props.item.type == 'standard' ? (
-          dayjs(props.item.data).tz('Etc/GMT-3').format('YYYY-MM-DD hh:mm A')
-        ) : (
-          <div>
-            {state.completed} <br />
-            {state.last}
+            <IconButton size="small" onClick={props.onEdit}>
+              <EditIcon
+                className={
+                  getTextColor(props.item.color || '#D1D1D1', true)
+                    ? classes.buttonDark
+                    : classes.buttonLight
+                }
+              />
+            </IconButton>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div
+            style={{
+              wordWrap: 'break-word',
+              overflow: 'hidden',
+              textAlign: 'center',
+              width: '100%',
+              fontSize: '20px',
+              marginBottom: '15px',
+              color: getTextColor(props.item.color || '#D1D1D1'),
+            }}
+          >
+            {props.item.name}
+          </div>
+          <div
+            style={{
+              width: '100%',
+              height: '24px',
+              fontSize: '18px',
+              textAlign: 'center',
+              overflow: 'hidden',
+              color: getTextColor(props.item.color || '#D1D1D1'),
+            }}
+          >
+            {props.item.type == 'standard' ? state.msg : state.next}
+          </div>
+          <div
+            style={{
+              textAlign: 'center',
+              fontSize: '13px',
+              color: getTextColor(props.item.color || '#D1D1D1'),
+              opacity: '0.5',
+            }}
+          >
+            {props.item.type == 'standard' ? (
+              dayjs(props.item.data)
+                .tz('Etc/GMT-3')
+                .format('YYYY-MM-DD hh:mm A')
+            ) : (
+              <div>
+                {state.completed} <br />
+                {state.last}
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              width: 'max-content',
+              height: 'max-content',
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexDirection: 'row-reverse',
+              position: 'absolute',
+              padding: 8,
+              top: 0,
+              left: 0,
+            }}
+            {...provided.dragHandleProps}
+          >
+            <DragIcon size="small" />
+          </div>
+        </div>
+      )}
+    </Draggable>
   );
 }
 

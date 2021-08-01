@@ -56,6 +56,16 @@ function CreateMenu(props) {
 
   const onSubmit = () => {
     if (state.name == '') return;
+
+    if (!props.disableCategory) {
+      props.onCreate({
+        title: state.name,
+        color: state.color,
+        items: [],
+      });
+      return;
+    }
+
     if (state.standard && state.time != '') {
       let date = new Date(Date.parse(state.time));
       if (!isNaN(date.getTime())) {
@@ -159,6 +169,7 @@ function CreateMenu(props) {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
+              alignItems: 'center',
               marginRight: '20px',
             }}
             noValidate
@@ -171,7 +182,7 @@ function CreateMenu(props) {
               onChange={handleFieldChange}
               className={classes.textField}
             />
-            {state.standard && (
+            {state.standard && props.disableCategory && (
               <TextField
                 label="Time"
                 name="time"
@@ -208,29 +219,32 @@ function CreateMenu(props) {
             )}
           </form>
           <FormGroup column>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  defaultChecked
-                  checked={state.standard}
-                  onChange={handleChange}
-                  name="standard"
-                  color="primary"
-                />
-              }
-              label="Standard"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.sequence}
-                  onChange={handleChange}
-                  name="sequence"
-                  color="primary"
-                />
-              }
-              label="Sequence"
-            />
+            {props.disableCategory && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.standard}
+                    onChange={handleChange}
+                    name="standard"
+                    color="primary"
+                  />
+                }
+                label="Standard"
+              />
+            )}
+            {props.disableCategory && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.sequence}
+                    onChange={handleChange}
+                    name="sequence"
+                    color="primary"
+                  />
+                }
+                label="Sequence"
+              />
+            )}
           </FormGroup>
         </div>
         <CompactPicker
@@ -242,8 +256,8 @@ function CreateMenu(props) {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
+            justifyContent: 'space-between',
+            width: '230px',
             height: 'max-content',
             marginTop: '25px',
           }}
@@ -257,6 +271,16 @@ function CreateMenu(props) {
             onClick={onSubmit}
           >
             Submit
+          </Button>
+          <Button
+            style={{
+              width: '110px',
+            }}
+            variant="contained"
+            color="primary"
+            onClick={props.onCancel}
+          >
+            Cancel
           </Button>
         </div>
       </div>
