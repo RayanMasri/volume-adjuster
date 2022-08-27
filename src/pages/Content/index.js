@@ -1,6 +1,8 @@
-import { printLine } from './modules/print';
-
-console.log('Content script works!');
-console.log('Must reload extension for modifications to take effect.');
-
-printLine("Using the 'printLine' function from the Print Module");
+chrome.runtime.onMessage.addListener(function (response, sendResponse) {
+  document.querySelector('body').style.filter =
+    response.data.value == 100 && !response.data.night
+      ? ''
+      : `brightness(${response.data.value}%) sepia(${
+          response.data.night ? '50' : '0'
+        }%)`;
+});

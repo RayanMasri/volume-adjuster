@@ -1,9 +1,24 @@
 {
-  "manifest_version": 3,
-  "name": "Chrome Extension with React & Webpack",
-  "action": {
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "name": "Adjuster",
+  "background": {
+    "persistent": false,
+    "page": "background.html"
+  },
+  "browser_action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
   },
-  "permissions": ["storage"]
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.bundle.js"],
+      "css": ["content.styles.css"]
+    }
+  ],
+  "permissions": ["<all_urls>", "tabCapture", "tabs"]
 }

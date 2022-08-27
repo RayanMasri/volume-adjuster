@@ -1,7 +1,6 @@
 {
   "name": "chrome-extension-boilerplate-react",
   "version": "4.0.1",
-  "description": "A chrome extension boilerplate built with React 17 and Webpack 5",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -30,7 +29,9 @@
     "react-dom": "^17.0.1",
     "react-dropdown": "^1.9.2",
     "react-hot-loader": "^4.13.0",
+    "react-remove-scroll-bar": "^2.2.0",
     "react-sortable-hoc": "^2.0.0",
+    "sass": "^1.54.3",
     "util": "^0.12.4",
     "uuid": "^8.3.2",
     "write-json-file": "^4.3.0"
